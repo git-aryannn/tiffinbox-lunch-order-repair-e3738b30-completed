@@ -7,6 +7,7 @@ export default function MenuList({ selectedDishId, onSelectDish }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    let cancelled = false
     async function loadMenu() {
       setLoading(true);
       setError('');
@@ -17,15 +18,25 @@ export default function MenuList({ selectedDishId, onSelectDish }) {
           throw new Error('Failed to load menu');
         }
         const data = await res.json();
-        setDishes(data);
+        if (!cancelled){
+          setDishes(data);
+        }
       } catch (err) {
-        setError('Could not load the menu. Please try again.');
+        if (!cancelled){
+          setError('Could not load the menu. Please try again');
+        }
       } finally {
+        if(!cancelled){
+          setLoading(false);
+        }
         setLoading(false);
       }
     }
     loadMenu();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [vegOnly]);
 
   if (loading) {
     return <p>Loading menu...</p>;
